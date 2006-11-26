@@ -7,6 +7,7 @@ module Technoweenie
       end
     end
     
+    mattr_accessor :log_context_activity
     mattr_reader :context_cache
 
     def find_every_with_context(options)
@@ -17,6 +18,7 @@ module Technoweenie
     
     def find_one_with_context(id, options)
       cached = options[:conditions].nil? && find_in_context(id)
+      logger.debug "[Context] Found #{name} ##{id}}" if log_context_activity && cached
       cached ? cached : find_one_without_context(id, options)
     end
 
@@ -26,6 +28,7 @@ module Technoweenie
     
     def store_in_context(records)
       return if context_cache.nil?
+      logger.debug "[Context] Storing #{name} records: #{records.collect(&:id).to_sentence}" if log_context_activity
       records.inject(context_cache[self] ||= {}) do |memo, record| 
         memo.update record.id => record
       end
