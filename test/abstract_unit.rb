@@ -16,6 +16,14 @@ load(File.dirname(__FILE__) + "/schema.rb")
 
 ActiveRecord::Base.send :extend, Technoweenie::ActiveRecordContext
 
-class Foo < ActiveRecord::Base
-  set_table_name 'foo'
+class Topic < ActiveRecord::Base
+end
+
+class Post < ActiveRecord::Base; end
+class NormalPost < Post
+  belongs_to :topic
+end
+
+class PolymorphPost < Post
+  belongs_to :topic, :polymorphic => true
 end

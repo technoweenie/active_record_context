@@ -2,39 +2,61 @@ require File.join(File.dirname(__FILE__), 'abstract_unit')
 
 class ActiveRecordContextTest < Test::Unit::TestCase
   def setup
-    Foo.destroy_all
-    @records = {}
-    2.times { |i| f = Foo.create!(:bar => "test#{i}"); @records[f.id] = f }
-    assert_nil Foo.context_cache
+    Post.destroy_all
+    @posts = []
+    @topic = Topic.create! :title => 'test'
+    @posts << NormalPost.create!(:body => 'normal body', :topic => @topic)
+    @posts << PolymorphPost.create!(:body => 'polymorph body', :topic => @topic)
+    assert_nil Post.context_cache
   end
 
   def test_should_initialize_context_cache_hash
-    Foo.with_context do
-      assert_kind_of Hash, Foo.context_cache
-      assert_equal 0, Foo.context_cache.size
+    Post.with_context do
+      assert_kind_of Hash, Post.context_cache
+      assert_equal 0, Post.context_cache.size
     end
-    assert_nil Foo.context_cache
+    assert_nil Post.context_cache
   end
 
   def test_should_store_records_in_cache
-    Foo.with_context do
-      records = Foo.find(:all)
-      assert_equal records.size, Foo.context_cache[Foo].size
-      assert_equal @records[1], Foo.find_in_context(1)
-      assert_equal @records[2], Foo.find_in_context(2)
+    Post.with_context do
+      records = Post.find(:all)
+      assert_equal records.size, Post.context_cache[Post].size
+      assert_equal @posts[0], Post.find_in_context(1)
+      assert_equal @posts[1], Post.find_in_context(2)
     end
   end
   
   def test_should_find_records_in_context
-    Foo.with_context do
-      records = Foo.find(:all)
-      Foo.destroy_all
-      assert_equal @records[1], Foo.find(1)
-      assert_equal @records[2], Foo.find(2)
+    Post.with_context do
+      records = Post.find(:all)
+      Post.destroy_all
+      assert_equal @posts[0], Post.find(1)
+      assert_equal @posts[1], Post.find(2)
     end
     
     assert_raise ActiveRecord::RecordNotFound do
-      Foo.find 1
+      Post.find 1
     end
+  end
+  
+  def test_should_find_belongs_to_record
+    Post.with_context do
+      Topic.find :all ; Topic.delete_all
+      assert_equal @topic, @posts[0].topic(true)
+    end
+    
+    assert_equal @topic, @posts[0].topic
+    assert_nil @posts[0].topic(true)
+  end
+  
+  def test_should_find_belongs_to_polymorphic_record
+    Post.with_context do
+      Topic.find :all ; Topic.delete_all
+      assert_equal @topic, @posts[1].topic(true)
+    end
+    
+    assert_equal @topic, @posts[1].topic
+    assert_nil @posts[1].topic(true)
   end
 end
