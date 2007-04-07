@@ -17,19 +17,19 @@ module Technoweenie
     end
     
     def find_one_with_context(id, options)
-      cached = options[:conditions].nil? && find_in_context(id)
-      logger.debug "[Context] Found #{name} ##{id}}" if log_context_activity && cached
-      cached ? cached : find_one_without_context(id, options)
+      record = options[:conditions].nil? && cached[id.to_i]
+      logger.debug("[Context] #{record ? :Found : :Missed} #{name} ##{id}") if log_context_activity
+      record ? record : find_one_without_context(id, options)
     end
 
-    def find_in_context(id)
-      context_cache && context_cache[self] && context_cache[self][id.to_i]
+    def cached
+      context_cache ? (context_cache[self] ||= {}) : {}
     end
     
     def store_in_context(records)
       return if context_cache.nil?
       logger.debug "[Context] Storing #{name} records: #{records.collect(&:id).to_sentence}" if log_context_activity
-      records.inject(context_cache[self] ||= {}) do |memo, record| 
+      records.inject(cached) do |memo, record| 
         memo.update record.id => record
       end
     end
