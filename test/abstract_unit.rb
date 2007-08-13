@@ -7,6 +7,8 @@ require 'active_support'
 require 'active_record'
 require 'active_record/fixtures'
 require 'technoweenie/active_record_context'
+require 'rubygems'
+require 'mocha'
 
 config = YAML::load(IO.read(File.dirname(__FILE__) + '/database.yml'))
 ActiveRecord::Base.logger = Logger.new(File.dirname(__FILE__) + "/debug.log")
