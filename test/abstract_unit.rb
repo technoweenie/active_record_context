@@ -16,7 +16,7 @@ ActiveRecord::Base.establish_connection(config[ENV['DB'] || 'sqlite'])
 
 load(File.dirname(__FILE__) + "/schema.rb")
 
-ActiveRecord::Base.send :extend, Technoweenie::ActiveRecordContext
+ActiveRecord::Base.send :include, Technoweenie::ActiveRecordContext
 
 class Topic < ActiveRecord::Base
 end

@@ -87,4 +87,13 @@ class ActiveRecordContextTest < Test::Unit::TestCase
     Topic.expects(:find).with(:all, :conditions => {:id => [@topic.id]})
     Topic.prefetch @posts
   end
+  
+  def test_should_reload_record
+    Post.with_context do
+      @post = Post.find @posts.first.id
+      assert_equal 'normal body', @post.body
+      Post.update_all ['body = ?', 'foo bar']
+      assert_equal 'foo bar', @post.reload.body
+    end
+  end
 end

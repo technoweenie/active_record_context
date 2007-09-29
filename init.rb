@@ -1,1 +1,1 @@
-ActiveRecord::Base.send :extend, Technoweenie::ActiveRecordContext
+ActiveRecord::Base.send :include, Technoweenie::ActiveRecordContext
